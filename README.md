@@ -7,7 +7,7 @@ See README for more info
 
 ## Contribute
 
-Install the toolchain (on fedora>=33 for cabal v3): `dnf install -y ghc cabal-install`
+Install the toolchain (on fedora>=33 for cabal v3): `dnf install -y ghc cabal-install zlib-devel`
 
 Make sure the package list is updated by running: `cabal update`
 
