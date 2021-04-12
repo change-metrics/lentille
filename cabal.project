@@ -1,7 +1,7 @@
 source-repository-package
   type: git
   location: https://github.com/TristanCacqueray/hsbugzilla.git
-  tag: 217275ca8816e27ceb2c9c7147cb7c16dc8c54e6
+  tag: c0ece79a305ed5107a1b0c80d13800074c47f813
   -- Integration branch is proposed as dedicated PRs in: https://github.com/juhp/hsbugzilla/pulls
 
 packages: ./
