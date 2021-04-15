@@ -4,5 +4,10 @@ source-repository-package
   tag: c0ece79a305ed5107a1b0c80d13800074c47f813
   -- Integration branch is proposed as dedicated PRs in: https://github.com/juhp/hsbugzilla/pulls
 
-packages: ./ ./lentille-api/
+packages:
+  doc/
+  lentille/
+  lentille-api/
+  lentille-bugzilla/
+  lentille-mock/
 -- ../../juhp/hsbugzilla/

@@ -1,0 +1,14 @@
+cabal-version:       2.4
+name:                lentille-doc
+version:             0.1.0.0
+build-type:          Simple
+
+test-suite lentille-adr
+  type:                exitcode-stdio-1.0
+  main-is:             0003-choice-of-design.lhs
+  hs-source-dirs:      adr
+  build-depends:       base                       < 5
+                     , markdown-unlit             < 0.6
+  ghc-options:         -pgmL markdown-unlit
+  build-tool-depends:  markdown-unlit:markdown-unlit
+  default-language:    Haskell2010
