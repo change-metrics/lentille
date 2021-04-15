@@ -11,9 +11,10 @@ let
     };
   };
   drv = hsPkgs.callCabal2nix "lentille" ./. { };
+  drv-api = hsPkgs.callCabal2nix "lentille-api" ./lentille-api/. { };
   shellDrv = hsPkgs.shellFor {
     withHoogle = hoogle;
-    packages = p: [ drv ];
+    packages = p: [ drv drv-api ];
     buildInputs = with nixpkgs.haskellPackages; [
       hlint
       cabal-install
