@@ -7,7 +7,9 @@ source-repository-package
 packages:
   doc/
   lentille/
-  lentille-api/
   lentille-bugzilla/
   lentille-mock/
 -- ../../juhp/hsbugzilla/
+
+optional-packages:
+  lentille-api/
