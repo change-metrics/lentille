@@ -27,6 +27,5 @@ jobs:
             ${{ runner.os }}-${{ matrix.ghc }}-
             ${{ runner.os }}-
       - run: cabal update
-      - run: cabal build --enable-tests
-      - run: cabal test --enable-tests --test-show-details=direct
-      - run: cabal sdist
+      - run: cabal build --enable-tests all
+      - run: cabal test --enable-tests --test-show-details=direct all

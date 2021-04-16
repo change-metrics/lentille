@@ -8,16 +8,28 @@ let
         version = "1.0.0.1";
         sha256 = "0cw9a1gfvias4hr36ywdizhysnzbzxy20fb3jwmqmgjy40lzxp2g";
       };
+      lentille = self.callCabal2nix "lentille" ./lentille/. { };
+      lentille-doc = self.callCabal2nix "lentille-doc" ./doc/. { };
+      lentille-mock = self.callCabal2nix "lentille-mock" ./lentille-mock/. { };
+      lentille-bugzilla =
+        self.callCabal2nix "lentille-bugzilla" ./lentille-bugzilla/. { };
+      lentille-api = self.callCabal2nix "lentille-api" ./lentille-api/. { };
     };
   };
-  drv = hsPkgs.callCabal2nix "lentille" ./. { };
+  drvs = with hsPkgs; [
+    lentille
+    lentille-doc
+    lentille-mock
+    lentille-bugzilla
+    lentille-api
+  ];
   shellDrv = hsPkgs.shellFor {
     withHoogle = hoogle;
-    packages = p: [ drv ];
+    packages = p: drvs;
     buildInputs = with nixpkgs.haskellPackages; [
       hlint
       cabal-install
       haskell-language-server
     ];
   };
-in if nixpkgs.lib.inNixShell then shellDrv else drv
+in if nixpkgs.lib.inNixShell then shellDrv else drvs

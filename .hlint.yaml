@@ -1,0 +1,2 @@
+- arguments:
+    - "--ignore-glob=doc/adr/*"
