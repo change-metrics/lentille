@@ -24,8 +24,8 @@ fakeTD =
   TaskData
     (IsoTime (fromMaybe (error "Oops") $ readMaybe "2021-04-01 00:00:00 UTC"))
     "changeUrl"
-    "type"
-    42
+    ["type"]
+    "42"
     "issueUrl"
     "issueTitle"
     "sev"
