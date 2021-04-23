@@ -8,7 +8,19 @@ let
         version = "1.0.0.1";
         sha256 = "0cw9a1gfvias4hr36ywdizhysnzbzxy20fb3jwmqmgjy40lzxp2g";
       };
+      bloodhound = nixpkgs.haskell.lib.overrideCabal super.bloodhound {
+        src = nixpkgs.fetchFromGitHub {
+          owner = "bitemyapp";
+          repo = "bloodhound";
+          rev = "4775ebb759fe1b7cb5f880e4a41044b2363d98af";
+          sha256 = "00wzaj4slvdxanm0krbc6mfn96mi5c6hhd3sywd3gq5m2ff59ggn";
+        };
+
+        broken = false;
+      };
       lentille = self.callCabal2nix "lentille" ./lentille/. { };
+      lentille-bloodhound =
+        self.callCabal2nix "lentille-bloodhound" ./lentille-bloodhound/. { };
       lentille-doc = self.callCabal2nix "lentille-doc" ./doc/. { };
       lentille-mock = self.callCabal2nix "lentille-mock" ./lentille-mock/. { };
       lentille-bugzilla =
@@ -18,6 +30,7 @@ let
   };
   drvs = with hsPkgs; [
     lentille
+    lentille-bloodhound
     lentille-doc
     lentille-mock
     lentille-bugzilla
