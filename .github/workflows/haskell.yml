@@ -12,6 +12,7 @@ jobs:
         ghc: ['8.10', '8.8']
     name: Haskell GHC ${{ matrix.ghc }}
     steps:
+      - run: sudo apt-get install grpc-dev
       - uses: actions/checkout@v2
       - uses: haskell/actions/setup@v1
         with:

@@ -10,13 +10,30 @@ source-repository-package
   tag: 4775ebb759fe1b7cb5f880e4a41044b2363d98af
   -- Pull in version bump that needs a new release
 
+source-repository-package
+  type: git
+  location: https://github.com/awakesecurity/proto3-suite
+  tag: 0af901f9ef3b9719e08eae4fab8fd700d6c8047a
+  -- Pull in version bump that needs a new release
+
+source-repository-package
+  type: git
+  location: https://github.com/awakesecurity/gRPC-haskell
+  tag: 1bdc3662db13686f5e4941f3cc506f6fdf11ce32
+source-repository-package
+  type: git
+  location: https://github.com/awakesecurity/gRPC-haskell
+  tag: 1bdc3662db13686f5e4941f3cc506f6fdf11ce32
+  subdir: core
+  -- Pull in fix for newer grpc lib that needs a new release
+
 packages:
   doc/
   lentille/
   lentille-bugzilla/
   lentille-mock/
--- ../../juhp/hsbugzilla/
 
 optional-packages:
   lentille-api/
   lentille-bloodhound/
+  lentille-grpc/

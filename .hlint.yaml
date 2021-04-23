@@ -1,2 +1,3 @@
 - arguments:
     - "--ignore-glob=doc/adr/*"
+    - "--ignore-glob=lentille-grpc/src/Monocle/*"
