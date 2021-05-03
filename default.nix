@@ -8,6 +8,16 @@ let
         version = "1.0.0.1";
         sha256 = "0cw9a1gfvias4hr36ywdizhysnzbzxy20fb3jwmqmgjy40lzxp2g";
       };
+      morpheus-graphql-core =
+        nixpkgs.haskell.lib.overrideCabal super.morpheus-graphql-core {
+          version = "0.17.0";
+          sha256 = "0rj4g05365hp5c9b5y0v0v7s73jw3gkq3g0z3m6xrpxi3j2gp0p8";
+        };
+      morpheus-graphql-client =
+        nixpkgs.haskell.lib.overrideCabal super.morpheus-graphql-client {
+          version = "0.17.0";
+          sha256 = "1djgxy59s98na1s182p5a06qjhw8n862zka96wwp8ckyx2jpjkq3";
+        };
       bloodhound = nixpkgs.haskell.lib.overrideCabal super.bloodhound {
         src = nixpkgs.fetchFromGitHub {
           owner = "bitemyapp";
@@ -43,6 +53,7 @@ let
       hlint
       cabal-install
       haskell-language-server
+      ghcid
     ];
   };
 in if nixpkgs.lib.inNixShell then shellDrv else drvs

@@ -20,3 +20,4 @@ packages:
 optional-packages:
   lentille-api/
   lentille-bloodhound/
+  lentille-github-query/
