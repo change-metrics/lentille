@@ -16,8 +16,7 @@ packages:
   lentille-bugzilla/
   lentille-github/
   lentille-mock/
--- ../../juhp/hsbugzilla/
 
 optional-packages:
-  lentille-api/
-  lentille-bloodhound/
+  playground/lentille-bloodhound/
+  playground/lentille-servant/
