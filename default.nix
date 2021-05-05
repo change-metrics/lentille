@@ -29,13 +29,14 @@ let
         broken = false;
       };
       lentille = self.callCabal2nix "lentille" ./lentille/. { };
-      lentille-bloodhound =
-        self.callCabal2nix "lentille-bloodhound" ./lentille-bloodhound/. { };
       lentille-doc = self.callCabal2nix "lentille-doc" ./doc/. { };
       lentille-mock = self.callCabal2nix "lentille-mock" ./lentille-mock/. { };
       lentille-bugzilla =
         self.callCabal2nix "lentille-bugzilla" ./lentille-bugzilla/. { };
-      lentille-api = self.callCabal2nix "lentille-api" ./lentille-api/. { };
+      lentille-github = self.callCabal2nix "lentille-github" ./lentille-github/. {};
+      lentille-servant = self.callCabal2nix "lentille-servant" ./playground/lentille-servant/. { };
+      lentille-bloodhound =
+        self.callCabal2nix "lentille-bloodhound" ./playground/lentille-bloodhound/. { };
     };
   };
   drvs = with hsPkgs; [
@@ -44,7 +45,8 @@ let
     lentille-doc
     lentille-mock
     lentille-bugzilla
-    lentille-api
+    lentille-servant
+    lentille-github
   ];
   shellDrv = hsPkgs.shellFor {
     withHoogle = hoogle;

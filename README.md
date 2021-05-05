@@ -5,9 +5,10 @@
 
 This repository contains Haskell package for change-metrics:
 
-* [`lentille`](./lentille) - a prelude library
-* [`lentille-api`](./lentille-api) - a WIP servant based api prototype
+* [`lentille`](./lentille) - a prelude library and monocle client engine
 * [`lentille-bugzilla`](./lentille-bugzilla) - bugzilla task crawler
+* [`lentille-github`](./lentille-bugzilla) - github task crawler
+
 
 ## Contributing
 
