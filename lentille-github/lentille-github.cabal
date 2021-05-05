@@ -1,5 +1,5 @@
 cabal-version:       2.4
-name:                lentille-github-query
+name:                lentille-github
 version:             0.1.0.0
 build-type:          Simple
 tested-with:         GHC == 8.10.4
@@ -25,7 +25,8 @@ common common-options
 library
   import:              common-options
   hs-source-dirs:      src
-  build-depends:     , base                       < 5
+  build-depends:       lentille
+                     , base                       < 5
                      , relude                     > 1.0 && < 1.1
                      , aeson                      < 1.6
                      , streaming                  < 0.3
@@ -35,3 +36,4 @@ library
                      , morpheus-graphql-client    ^>= 0.17
   exposed-modules:     Lentille.GitHub
                      , Lentille.GitHub.Favorites
+                     , Lentille.GitHub.Issues
