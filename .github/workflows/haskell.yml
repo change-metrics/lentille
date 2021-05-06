@@ -12,7 +12,18 @@ jobs:
         ghc: ['8.10', '8.8']
     name: Haskell GHC ${{ matrix.ghc }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: lentille
+
+      - name: Checkout monocle repo
+        uses: actions/checkout@v2
+        with:
+          repository: change-metrics/monocle
+          path: monocle
+          ref: refs/pull/362/head
+
       - uses: haskell/actions/setup@v1
         with:
           cabal-version: '3.4'
@@ -27,5 +38,5 @@ jobs:
             ${{ runner.os }}-${{ matrix.ghc }}-
             ${{ runner.os }}-
       - run: cabal update
-      - run: cabal build --enable-tests all
-      - run: cabal test --enable-tests --test-show-details=direct all
+      - run: cd lentille; cabal build --enable-tests all
+      - run: cd lentille; cabal test --enable-tests --test-show-details=direct all

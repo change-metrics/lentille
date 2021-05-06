@@ -3,9 +3,8 @@
 [![Hackage](https://img.shields.io/hackage/v/lentille.svg?logo=haskell)](https://hackage.haskell.org/package/lentille)
 [![AGPL-3.0-only license](https://img.shields.io/badge/license-AGPL--3.0--only-blue.svg)](LICENSE)
 
-This repository contains Haskell package for change-metrics:
+This repository contains worker for change-metrics:
 
-* [`lentille`](./lentille) - a prelude library and monocle client engine
 * [`lentille-bugzilla`](./lentille-bugzilla) - bugzilla task crawler
 * [`lentille-github`](./lentille-bugzilla) - github task crawler
 
