@@ -1,15 +1,15 @@
 name: Haskell
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ['8.10', '8.8']
+        ghc: ["8.10", "8.8"]
     name: Haskell GHC ${{ matrix.ghc }}
     steps:
       - name: Checkout
@@ -22,11 +22,13 @@ jobs:
         with:
           repository: change-metrics/monocle
           path: monocle
-          ref: refs/pull/362/head
+          ref: refs/heads/master
+          # To validate a PR with a dependent PR on Monocle
+          # ref: refs/pull/362/head
 
       - uses: haskell/actions/setup@v1
         with:
-          cabal-version: '3.4'
+          cabal-version: "3.4"
           ghc-version: ${{ matrix.ghc }}
       - uses: actions/cache@v2
         with:
