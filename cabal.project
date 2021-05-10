@@ -10,13 +10,19 @@ source-repository-package
   tag: 4775ebb759fe1b7cb5f880e4a41044b2363d98af
   -- Pull in version bump that needs a new release
 
+source-repository-package
+  type: git
+  location: https://github.com/change-metrics/monocle
+  -- tag: XXX
+  subdir: haskell/
+
 packages:
   doc/
-  lentille/
   lentille-bugzilla/
   lentille-github/
-  lentille-mock/
+  -- ../monocle/haskell/
 
 optional-packages:
-  playground/lentille-bloodhound/
+  -- TODO: update to the new task data type
+  -- playground/lentille-bloodhound/
   playground/lentille-servant/
