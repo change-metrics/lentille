@@ -22,9 +22,9 @@ jobs:
         with:
           repository: change-metrics/monocle
           path: monocle
-          ref: refs/heads/master
+          # ref: refs/heads/master
           # To validate a PR with a dependent PR on Monocle
-          # ref: refs/pull/362/head
+          ref: refs/pull/366/head
 
       - uses: haskell/actions/setup@v1
         with:
