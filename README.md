@@ -36,3 +36,30 @@ Ensure to have a checkout of change-metrics/monocle in the lentille's parent dir
 
 In `cabal.project`, add `../monocle/haskell/` to the list of packages and comment
 the `source-repository-package` of Monocle.
+
+## Run a crawler
+
+Prior to run a crawler, you need to ensure that a crawler entry is defined in the Monocle
+[configuration](https://github.com/change-metrics/monocle#connect-a-tasks-tracker-crawler).
+
+## Run the GitHub issue crawler
+
+A CLI is available and the crawler can be run with the following command:
+
+```ShellSession
+GITHUB_GRAPH_TOKEN=<gh-token> MONOCLE_API_KEY=<monocle-api-key> cabal run lentille-github -- \
+ --monocle-url <monocle-api-url> --index elastic --crawler-name gh-crawler --repo elastic/elasticsearch
+```
+
+## Run the BugZilla crawler
+
+Note that this crawler is based on the [redhat-bugzilla](https://hackage.haskell.org/package/bugzilla-redhat)
+library and it might not work as expected with regular BugZilla.
+
+A CLI is available and the crawler can be run with the following command:
+
+```ShellSession
+BZ_API_KEY=<bugzilla-api-key> MONOCLE_API_KEY=<monocle-api-key> cabal run lentille-bugzilla -- \
+ --monocle-url <monocle-url> --index openstack --crawler-name rhbz-crawler \
+ --bugzilla-product "Red Hat OpenStack"
+```
