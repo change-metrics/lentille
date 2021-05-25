@@ -63,3 +63,9 @@ BZ_API_KEY=<bugzilla-api-key> MONOCLE_API_KEY=<monocle-api-key> cabal run lentil
  --monocle-url <monocle-url> --index openstack --crawler-name rhbz-crawler \
  --bugzilla-product "Red Hat OpenStack"
 ```
+
+## Build container image
+
+```ShellSession
+TMPDIR=/tmp podman build -f Containerfile -t quay.io/change-metrics/lentille .
+```

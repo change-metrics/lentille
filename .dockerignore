@@ -1,0 +1,7 @@
+.git
+.gitignore
+.dockerignore
+
+# cabal-install
+dist-newstyle/
+.ghc.environment*
