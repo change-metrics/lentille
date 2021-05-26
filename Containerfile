@@ -29,4 +29,4 @@ RUN cd lentille-github;   cabal v2-install -v1 exe:lentille-github
 ################################################################################
 FROM registry.fedoraproject.org/fedora:33
 
-COPY --from=0 /root/.cabal/bin/lentille-* /bin
+COPY --from=0 /root/.cabal/bin/lentille-* /bin/
