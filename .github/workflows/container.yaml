@@ -1,0 +1,21 @@
+name: Container build
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'change-metrics'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build container image
+        run: docker build -f Containerfile -t quay.io/change-metrics/lentille .
+
+      - name: Test lentille-bugzilla
+        run: docker run -it --rm quay.io/change-metrics/lentille /bin/lentille-bugzilla --help
+
+      - name: Test lentille-github
+        run: docker run -it --rm quay.io/change-metrics/lentille /bin/lentille-github --help
