@@ -15,7 +15,7 @@ jobs:
         run: docker build -f Containerfile -t quay.io/change-metrics/lentille .
 
       - name: Test lentille-bugzilla
-        run: docker run -it --rm quay.io/change-metrics/lentille /bin/lentille-bugzilla --help
+        run: docker run quay.io/change-metrics/lentille /bin/lentille-bugzilla --help
 
       - name: Test lentille-github
-        run: docker run -it --rm quay.io/change-metrics/lentille /bin/lentille-github --help
+        run: docker run quay.io/change-metrics/lentille /bin/lentille-github --help
