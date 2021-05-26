@@ -51,6 +51,13 @@ GITHUB_GRAPH_TOKEN=<gh-token> MONOCLE_API_KEY=<monocle-api-key> cabal run lentil
  --monocle-url <monocle-api-url> --index elastic --crawler-name gh-crawler --repo elastic/elasticsearch
 ```
 
+Or using the container image:
+
+```ShellSession
+podman run -e GITHUB_GRAPH_TOKEN=<gh-token> -e MONOCLE_API_KEY=<monocle-api-key> -it --rm \
+quay.io/change-metrics/lentille /bin/lentille-github -h
+```
+
 ## Run the BugZilla crawler
 
 Note that this crawler is based on the [redhat-bugzilla](https://hackage.haskell.org/package/bugzilla-redhat)
@@ -62,4 +69,17 @@ A CLI is available and the crawler can be run with the following command:
 BZ_API_KEY=<bugzilla-api-key> MONOCLE_API_KEY=<monocle-api-key> cabal run lentille-bugzilla -- \
  --monocle-url <monocle-url> --index openstack --crawler-name rhbz-crawler \
  --bugzilla-product "Red Hat OpenStack"
+```
+
+Or using the container image:
+
+```ShellSession
+podman run -e BZ_API_KEY=<bugzilla-api-key> -e MONOCLE_API_KEY=<monocle-api-key> -it --rm \
+quay.io/change-metrics/lentille /bin/lentille-bugzilla -h
+```
+
+## Build container image
+
+```ShellSession
+TMPDIR=/tmp podman build -f Containerfile -t quay.io/change-metrics/lentille .
 ```
