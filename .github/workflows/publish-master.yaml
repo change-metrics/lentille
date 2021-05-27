@@ -1,0 +1,20 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish-master:
+    if: github.repository_owner == 'change-metrics'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build container image
+        run: docker build -f Containerfile -t quay.io/change-metrics/lentille .
+
+      - name: Publish image to quay.io
+        run: |
+          docker login -u "${{ secrets.QUAYIO_USERNAME }}" -p "${{ secrets.QUAYIO_PASSWORD }}" quay.io
+          docker push quay.io/change-metrics/lentille:latest
