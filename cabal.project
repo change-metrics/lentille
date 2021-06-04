@@ -4,11 +4,11 @@ source-repository-package
   tag: 21050c730716b7cd911fb85fcab7af6a5446250d
   -- Pull in https://github.com/juhp/hsbugzilla/pull/15
 
-source-repository-package
-  type: git
-  location: https://github.com/change-metrics/monocle
-  -- tag: XXX
-  subdir: haskell/
+-- source-repository-package
+--  type: git
+--  location: https://github.com/change-metrics/monocle
+--  -- tag: XXX
+--  subdir: haskell/
 
 source-repository-package
   type: git
@@ -21,4 +21,4 @@ packages:
   lentille-bugzilla/
   lentille-github/
   lentille-gitlab/
-  -- ../monocle/haskell/
+  ../monocle/haskell/
