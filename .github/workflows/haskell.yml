@@ -21,10 +21,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: change-metrics/monocle
+          submodules: recursive
           path: monocle
-          # ref: refs/heads/master
+          ref: refs/heads/master
           # To validate a PR with a dependent PR on Monocle
-          ref: refs/pull/394/head
+          # ref: refs/pull/394/head
 
       - uses: haskell/actions/setup@v1
         with:

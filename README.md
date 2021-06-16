@@ -21,6 +21,12 @@ dnf install -y ghc cabal-install zlib-devel git && cabal update
 cabal test all
 ```
 
+Make sure monocle is cloned in the parent directory:
+
+```ShellSession
+git clone --recurse-submodules https://github.com/change-metrics/monocle ../monocle
+```
+
 ### Validate a change that depend on a PR on Monocle
 
 Ensure to revert those changes before the merge of the Lentille PR.
