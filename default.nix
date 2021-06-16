@@ -48,6 +48,7 @@ let
       broken = false;
     };
     monocle = self.callCabal2nix "monocle" ../monocle/haskell/. { };
+    macroscrope = self.callCabal2nix "macroscope" ./macroscope/. { };
     lentille-doc = self.callCabal2nix "lentille-doc" ./doc/. { };
     lentille-bugzilla =
       self.callCabal2nix "lentille-bugzilla" ./lentille-bugzilla/. { };
@@ -61,6 +62,7 @@ let
     lentille-bugzilla
     lentille-github
     lentille-gitlab
+    macroscope
   ];
   shellDrv = hsPkgs.shellFor {
     withHoogle = hoogle;

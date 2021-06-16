@@ -15,4 +15,5 @@ packages:
   lentille-bugzilla/
   lentille-github/
   lentille-gitlab/
+  macroscope/
   ../monocle/haskell/

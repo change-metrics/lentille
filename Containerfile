@@ -20,11 +20,13 @@ FROM quay.io/change-metrics/builder
 # Build project
 COPY cabal.project LICENSE /build/
 COPY doc/ /build/doc
+COPY macroscope/ /build/macroscope
 COPY lentille-bugzilla/ /build/lentille-bugzilla
 COPY lentille-github/ /build/lentille-github
 COPY lentille-gitlab/ /build/lentille-gitlab
 
 RUN git clone --recurse-submodules https://github.com/change-metrics/monocle /monocle
+RUN cd macroscope; cabal v2-install -v1 exe:macroscope
 RUN cd lentille-bugzilla; cabal v2-install -v1 exe:lentille-bugzilla
 RUN cd lentille-github;   cabal v2-install -v1 exe:lentille-github
 RUN cd lentille-gitlab;   cabal v2-install -v1 exe:lentille-gitlab
@@ -32,4 +34,4 @@ RUN cd lentille-gitlab;   cabal v2-install -v1 exe:lentille-gitlab
 ################################################################################
 FROM registry.fedoraproject.org/fedora:33
 
-COPY --from=0 /root/.cabal/bin/lentille-* /bin/
+COPY --from=0 /root/.cabal/bin/lentille-* /root/.cabal/bin/macroscope /bin/
