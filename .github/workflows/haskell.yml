@@ -7,10 +7,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        ghc: ["8.10", "8.8"]
-    name: Haskell GHC ${{ matrix.ghc }}
+    name: Haskell GHC
+    container:
+      image: quay.io/change-metrics/builder
+      options: --user root
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -21,24 +21,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: change-metrics/monocle
+          submodules: recursive
           path: monocle
           ref: refs/heads/master
           # To validate a PR with a dependent PR on Monocle
-          # ref: refs/pull/362/head
+          # ref: refs/pull/394/head
 
-      - uses: haskell/actions/setup@v1
-        with:
-          cabal-version: "3.4"
-          ghc-version: ${{ matrix.ghc }}
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cabal
-            dist-newstyle
-          key: ${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('**/*.cabal','**/cabal.project') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.ghc }}-
-            ${{ runner.os }}-
-      - run: cabal update
-      - run: cd lentille; cabal build --enable-tests all
-      - run: cd lentille; cabal test --enable-tests --test-show-details=direct all
+      - run: ln -s /root/.cabal /github/home/.cabal
+      - run: cd lentille; cabal build --enable-tests exe:lentille-bugzilla exe:lentille-github exe:lentille-gitlab
+      - run: cd lentille; cabal test --enable-tests --test-show-details=direct lentille-adr lentille-bugzilla-test

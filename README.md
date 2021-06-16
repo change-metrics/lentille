@@ -21,6 +21,12 @@ dnf install -y ghc cabal-install zlib-devel git && cabal update
 cabal test all
 ```
 
+Make sure monocle is cloned in the parent directory:
+
+```ShellSession
+git clone --recurse-submodules https://github.com/change-metrics/monocle ../monocle
+```
+
 ### Validate a change that depend on a PR on Monocle
 
 Ensure to revert those changes before the merge of the Lentille PR.
@@ -29,13 +35,6 @@ Ensure to revert those changes before the merge of the Lentille PR.
 
 In the `.github/workflows/haskell.yml` ensure to set the Monocle checkout ref at the
 right dependent PR.
-
-#### Locally
-
-Ensure to have a checkout of change-metrics/monocle in the lentille's parent directory.
-
-In `cabal.project`, add `../monocle/haskell/` to the list of packages and comment
-the `source-repository-package` of Monocle.
 
 ## Run a crawler
 

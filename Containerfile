@@ -22,9 +22,12 @@ COPY cabal.project LICENSE /build/
 COPY doc/ /build/doc
 COPY lentille-bugzilla/ /build/lentille-bugzilla
 COPY lentille-github/ /build/lentille-github
+COPY lentille-gitlab/ /build/lentille-gitlab
 
+RUN git clone --recurse-submodules https://github.com/change-metrics/monocle /monocle
 RUN cd lentille-bugzilla; cabal v2-install -v1 exe:lentille-bugzilla
 RUN cd lentille-github;   cabal v2-install -v1 exe:lentille-github
+RUN cd lentille-gitlab;   cabal v2-install -v1 exe:lentille-gitlab
 
 ################################################################################
 FROM registry.fedoraproject.org/fedora:33

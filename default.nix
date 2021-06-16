@@ -53,17 +53,14 @@ let
       self.callCabal2nix "lentille-bugzilla" ./lentille-bugzilla/. { };
     lentille-github =
       self.callCabal2nix "lentille-github" ./lentille-github/. { };
-    lentille-servant =
-      self.callCabal2nix "lentille-servant" ./playground/lentille-servant/. { };
-    lentille-bloodhound = self.callCabal2nix "lentille-bloodhound"
-      ./playground/lentille-bloodhound/. { };
+    lentille-gitlab =
+      self.callCabal2nix "lentille-gitlab" ./lentille-gitlab/. { };
   });
   drvs = with hsPkgs; [
-    lentille-bloodhound
     lentille-doc
     lentille-bugzilla
-    lentille-servant
     lentille-github
+    lentille-gitlab
   ];
   shellDrv = hsPkgs.shellFor {
     withHoogle = hoogle;
