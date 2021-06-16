@@ -10,6 +10,7 @@ jobs:
     name: Haskell GHC
     container:
       image: quay.io/change-metrics/builder
+      options: --user root
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,5 +27,6 @@ jobs:
           # To validate a PR with a dependent PR on Monocle
           # ref: refs/pull/394/head
 
+      - run: ln -s /root/.cabal /github/home/.cabal
       - run: cd lentille; cabal build --enable-tests all
       - run: cd lentille; cabal test --enable-tests --test-show-details=direct all
