@@ -23,9 +23,9 @@ jobs:
           repository: change-metrics/monocle
           submodules: recursive
           path: monocle
-          # ref: refs/heads/master
-          # To validate a PR with a dependent PR on Monocle (and disable the container workflow)
-          ref: refs/pull/431/head
+          ref: refs/heads/master
+          # To validate a PR with a dependent PR on Monocle
+          # ref: refs/pull/394/head
 
       - run: ln -s /root/.cabal /github/home/.cabal
       - run: cd lentille; cabal build --enable-tests exe:macroscope exe:lentille-bugzilla exe:lentille-github exe:lentille-gitlab
