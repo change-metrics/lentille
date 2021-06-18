@@ -79,6 +79,15 @@ podman run -e BZ_API_KEY=<bugzilla-api-key> -e MONOCLE_API_KEY=<monocle-api-key>
 quay.io/change-metrics/lentille /bin/lentille-bugzilla -h
 ```
 
+## Run the Macroscope
+
+The Macroscope schedules the run of Lentille crawlers (only the GitLab crawler is supported at the moment).
+
+```ShellSession
+podman run -it --rm --network host -v "$(pwd)"/etc:/etc/monocle:z quay.io/change-metrics/lentille \
+ /bin/macroscope --monocle-url http://localhost:8080 --config /etc/monocle/config.yaml --debug --interval 300
+```
+
 ## Build container image
 
 ```ShellSession
