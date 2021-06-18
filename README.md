@@ -7,6 +7,8 @@ This repository contains worker for change-metrics:
 
 - [`lentille-bugzilla`](./lentille-bugzilla) - bugzilla task crawler
 - [`lentille-github`](./lentille-bugzilla) - github task crawler
+- [`lentille-gitlab`](./lentille-bugzilla) - gitlab MR crawler
+- [`macroscope`](./macroscope) - a lentille runner
 
 ## Contributing
 

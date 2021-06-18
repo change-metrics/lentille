@@ -28,5 +28,5 @@ jobs:
           # ref: refs/pull/394/head
 
       - run: ln -s /root/.cabal /github/home/.cabal
-      - run: cd lentille; cabal build --enable-tests exe:lentille-bugzilla exe:lentille-github exe:lentille-gitlab
+      - run: cd lentille; cabal build --enable-tests exe:macroscope exe:lentille-bugzilla exe:lentille-github exe:lentille-gitlab
       - run: cd lentille; cabal test --enable-tests --test-show-details=direct lentille-adr lentille-bugzilla-test

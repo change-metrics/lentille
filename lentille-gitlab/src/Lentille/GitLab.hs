@@ -9,8 +9,6 @@ import Data.Aeson (FromJSON)
 import qualified Data.ByteString.Lazy as LBS
 import Data.Morpheus.Client
 import Data.Time.Clock
-import qualified Google.Protobuf.Timestamp as T
-import Monocle.Change
 import qualified Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Relude
@@ -29,18 +27,22 @@ data GitLabGraphClient = GitLabGraphClient
     token :: Text
   }
 
+newGitLabGraphClientWithKey :: MonadIO m => Text -> Text -> m GitLabGraphClient
+newGitLabGraphClientWithKey url' token' = do
+  manager' <- liftIO $ HTTP.newManager tlsManagerSettings
+  pure $ GitLabGraphClient manager' url' token'
+
 newGitLabGraphClient :: MonadIO m => Text -> m GitLabGraphClient
 newGitLabGraphClient url' = do
-  manager' <- liftIO $ HTTP.newManager tlsManagerSettings
   token' <-
     toText
       . fromMaybe (error "GITLAB_GRAPH_TOKEN environment is missing")
       <$> liftIO (lookupEnv "GITLAB_GRAPH_TOKEN")
-  pure $ GitLabGraphClient manager' url' token'
+  newGitLabGraphClientWithKey url' token'
 
 runGitLabGraphRequest :: MonadIO m => GitLabGraphClient -> LBS.ByteString -> m LBS.ByteString
 runGitLabGraphRequest (GitLabGraphClient manager' url' token') jsonBody = do
-  putTextLn $ "Sending this query: " <> decodeUtf8 jsonBody
+  -- putTextLn $ "Sending this query: " <> decodeUtf8 jsonBody
   let initRequest = HTTP.parseRequest_ (toString url')
       request =
         initRequest
@@ -67,27 +69,21 @@ streamFetch ::
   -- | query Args constructor, the function takes a cursor
   (Text -> Args a) ->
   -- | query result adapter
-  (a -> (PageInfo, [Text], [(Change, [ChangeEvent])])) ->
-  Stream (Of Change) m ()
-streamFetch client untilDate mkArgs transformResponse = go Nothing
+  (a -> (PageInfo, [Text], [b])) ->
+  -- | check for limit ->
+  (Stream (Of b) m () -> Stream (Of b) m ()) ->
+  Stream (Of b) m ()
+streamFetch client untilDate mkArgs transformResponse checkLimit = go Nothing
   where
-    isChangeUpdatedAfterDate :: UTCTime -> Change -> Bool
-    isChangeUpdatedAfterDate t change =
-      case changeUpdatedAt change of
-        Just tC -> isDateOlderThan (T.toUTCTime tC) t
-        _ -> False
-    -- t1 is older than t2 then return True
-    isDateOlderThan :: UTCTime -> UTCTime -> Bool
-    isDateOlderThan t1 t2 = diffUTCTime t1 t2 < 0
-    logStatus (PageInfo hasNextPage' _ totalCount') reachedLimit =
+    logStatus (PageInfo hasNextPage' _ totalCount') =
       putTextLn $
         "[gitlab-graphql] got total count of MR: "
           <> show totalCount'
           <> " fetching until date: "
           <> show untilDate
-          <> (if reachedLimit then " [reached date limit] " else "")
           <> (if hasNextPage' then " [hasNextPage] " else "")
     go pageInfoM = do
+      -- Get current page results
       respE <-
         fetch
           (runGitLabGraphRequest client)
@@ -95,14 +91,14 @@ streamFetch client untilDate mkArgs transformResponse = go Nothing
       let (pageInfo, decodingErrors, xs) = case respE of
             Left err -> error (toText err)
             Right resp -> transformResponse resp
+
       -- TODO: report decoding error
       unless (null decodingErrors) (error ("Decoding failed: " <> show decodingErrors))
-      let filteredChanges = filtered $ map fst xs
-      let reachedLimit = length xs > length filteredChanges
-      logStatus pageInfo reachedLimit
+
+      logStatus pageInfo
+
+      -- Yield the results
+      checkLimit (S.each xs)
+
       -- TODO: implement throttle
-      S.each filteredChanges
-      when (hasNextPage pageInfo && not reachedLimit) (go (Just pageInfo))
-      where
-        filtered :: [Change] -> [Change]
-        filtered = filter (isChangeUpdatedAfterDate untilDate)
+      when (hasNextPage pageInfo) (go (Just pageInfo))
