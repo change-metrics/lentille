@@ -37,6 +37,7 @@ library
                      , streaming                  < 0.3
                      , http-client                < 0.8
                      , http-client-tls            < 0.4
+                     , connection
                      , time                       < 1.12
                      , vector
                      , morpheus-graphql-client    ^>= 0.17

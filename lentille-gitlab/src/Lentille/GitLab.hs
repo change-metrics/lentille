@@ -9,8 +9,10 @@ import Data.Aeson (FromJSON)
 import qualified Data.ByteString.Lazy as LBS
 import Data.Morpheus.Client
 import Data.Time.Clock
+import qualified Network.Connection as Connection
 import qualified Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS (tlsManagerSettings)
+import qualified Network.HTTP.Client.TLS as HTTP
 import Relude
 import Streaming (Of, Stream)
 import qualified Streaming.Prelude as S
@@ -29,7 +31,13 @@ data GitLabGraphClient = GitLabGraphClient
 
 newGitLabGraphClientWithKey :: MonadIO m => Text -> Text -> m GitLabGraphClient
 newGitLabGraphClientWithKey url' token' = do
-  manager' <- liftIO $ HTTP.newManager tlsManagerSettings
+  disableTlsM <- lookupEnv "TLS_NO_VERIFY"
+  let managerSettings = case disableTlsM of
+        Nothing ->
+          let tlsSettings = Connection.TLSSettingsSimple True False False
+           in HTTP.mkManagerSettings tlsSettings Nothing
+        Just _ -> tlsManagerSettings
+  manager' <- liftIO $ HTTP.newManager managerSettings
   pure $ GitLabGraphClient manager' url' token'
 
 newGitLabGraphClient :: MonadIO m => Text -> m GitLabGraphClient
