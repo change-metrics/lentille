@@ -25,6 +25,7 @@ import qualified Google.Protobuf.Timestamp as T
 import Lentille.GitLab
   ( GitLabGraphClient,
     PageInfo (..),
+    host,
     newGitLabGraphClient,
     runGitLabGraphRequest,
     schemaLocation,
@@ -36,6 +37,8 @@ import Relude hiding (id, state)
 import Streaming (Of, Stream)
 import qualified Streaming.Prelude as S
 
+newtype NoteID = NoteID Text deriving (Show, Eq, EncodeScalar, DecodeScalar)
+
 -- https://docs.gitlab.com/ee/api/graphql/reference/index.html#projectmergerequests
 defineByDocumentFile
   schemaLocation
@@ -44,9 +47,6 @@ defineByDocumentFile
       project(fullPath: $project) {
         name
         nameWithNamespace
-        namespace {
-          name
-        }
         mergeRequests (first: 100, after: $cursor, sort: UPDATED_DESC, iids: $iids) {
           pageInfo {hasNextPage endCursor}
           count
@@ -102,6 +102,7 @@ defineByDocumentFile
             }
             notes {
               nodes {
+                id
                 author {
                   username
                 }
@@ -126,7 +127,7 @@ fetchMergeRequest client project mrID =
 streamMergeRequests ::
   MonadIO m => GitLabGraphClient -> UTCTime -> Text -> Stream (Of Changes) m ()
 streamMergeRequests client untilDate project =
-  streamFetch client untilDate mkArgs transformResponse breakOnDate
+  streamFetch client untilDate mkArgs (transformResponse $ host client) breakOnDate
   where
     mkArgs cursor = GetProjectMergeRequestsArgs (ID project) Nothing $ toCursorM cursor
     toCursorM :: Text -> Maybe String
@@ -147,15 +148,14 @@ streamMergeRequests client untilDate project =
     isDateOlderThan :: UTCTime -> UTCTime -> Bool
     isDateOlderThan t1 t2 = diffUTCTime t1 t2 < 0
 
-transformResponse :: GetProjectMergeRequests -> (PageInfo, [Text], [(Change, [ChangeEvent])])
-transformResponse result =
+transformResponse :: Text -> GetProjectMergeRequests -> (PageInfo, [Text], [(Change, [ChangeEvent])])
+transformResponse host result =
   case result of
     GetProjectMergeRequests
       ( Just
           ( ProjectProject
               shortName
               fullName
-              nameSpaceM
               ( Just
                   ( ProjectMergeRequestsMergeRequestConnection
                       (ProjectMergeRequestsPageInfoPageInfo hasNextPage endCursor)
@@ -167,15 +167,12 @@ transformResponse result =
         ) ->
         ( PageInfo hasNextPage endCursor count,
           [],
-          extract shortName fullName (toNamespaceName nameSpaceM) <$> catMaybes nodes
+          extract shortName fullName <$> catMaybes nodes
         )
     otherWise -> error ("Invalid response: " <> show otherwise)
   where
-    toNamespaceName nsoM = case nsoM of
-      Just nso -> name (nso :: ProjectNamespaceNamespace)
-      Nothing -> ""
-    extract :: Text -> Text -> Text -> ProjectMergeRequestsNodesMergeRequest -> (Change, [ChangeEvent])
-    extract shortName fullName namespace mr =
+    extract :: Text -> Text -> ProjectMergeRequestsNodesMergeRequest -> (Change, [ChangeEvent])
+    extract shortName fullName mr =
       let change = getChange mr
           comments = getComments mr
        in ( change,
@@ -205,7 +202,7 @@ transformResponse result =
 
         getChange :: ProjectMergeRequestsNodesMergeRequest -> Change
         getChange ProjectMergeRequestsNodesMergeRequest {..} =
-          let changeId = (toLazy $ unpackID id)
+          let changeId = (toLazy . sanitizeID $ unpackID id)
               changeNumber = getChangeNumber iid
               changeChangeId = getChangeId fullName iid
               changeTitle = toLazy title
@@ -216,14 +213,14 @@ transformResponse result =
               changeDeletions = (fromIntToInt32 $ getDSS (toDiffStatsSummary <$> diffStatsSummary) DSSDeletions)
               changeChangedFilesCount = (fromIntToInt32 $ getDSS (toDiffStatsSummary <$> diffStatsSummary) DSSFileCount)
               changeChangedFiles = (fromList $ getChangedFile . toDiffStats <$> fromMaybe [] diffStats)
-              changeCommits = (fromList $ toCommit . toMRCommit <$> maybe [] toCommitsNodes commitsWithoutMergeCommits)
-              changeRepositoryPrefix = toLazy namespace
-              changeRepositoryFullname = (toLazy $ removeSpace fullName)
+              changeCommits = (fromList $ toCommit host . toMRCommit <$> maybe [] toCommitsNodes commitsWithoutMergeCommits)
+              changeRepositoryPrefix = toLazy $ TE.replace ("/" <> shortName) "" $ removeSpace fullName
+              changeRepositoryFullname = toLazy $ removeSpace fullName
               changeRepositoryShortname = toLazy shortName
-              changeAuthor = (Just $ maybe ghostIdent (toIdent . getAuthorUsername) author)
+              changeAuthor = (Just $ maybe (ghostIdent host) (toIdent host . getAuthorUsername) author)
               changeOptionalMergedBy =
                 ( Just . ChangeOptionalMergedByMergedBy $
-                    maybe ghostIdent (toIdent . getMergerUsername) mergeUser
+                    maybe (ghostIdent host) (toIdent host . getMergerUsername) mergeUser
                 )
               changeBranch = toLazy sourceBranch
               changeTargetBranch = toLazy targetBranch
@@ -246,7 +243,7 @@ transformResponse result =
               -- TODO(fbo) Use the merge status : https://docs.gitlab.com/ee/api/graphql/reference/index.html#mergestatus
               changeMergeable = (if mergeable then "MERGEABLE" else "CONFLICT")
               changeLabels = (fromList $ getLabelTitle <$> maybe [] toLabelsNodes labels)
-              changeAssignees = (fromList $ toIdent . getAssigneesUsername <$> maybe [] toAssigneesNodes assignees)
+              changeAssignees = (fromList $ toIdent host . getAssigneesUsername <$> maybe [] toAssigneesNodes assignees)
               changeApprovals = (if approved then fromList ["APPROVED"] else fromList [])
               changeDraft = draft
               changeOptionalSelfMerged =
@@ -263,11 +260,13 @@ transformResponse result =
           where
             toNotesNodes (ProjectMergeRequestsNodesNotesNoteConnection nodes) = cleanMaybeMNodes nodes
             toMRComment :: ProjectMergeRequestsNodesNotesNodesNote -> MRComment
-            toMRComment (ProjectMergeRequestsNodesNotesNodesNote author' commentedAt ntype) =
+            toMRComment (ProjectMergeRequestsNodesNotesNodesNote nId author' commentedAt ntype) =
               let ProjectMergeRequestsNodesNotesNodesAuthorUserCore author'' = author'
                   commentType = getCommentType ntype
+                  NoteID noteIDT = nId
                in MRComment
-                    { coAuthor = toIdent author'',
+                    { coId = sanitizeID noteIDT,
+                      coAuthor = toIdent host author'',
                       coAuthoredAt = commentedAt,
                       coType = commentType
                     }
@@ -327,8 +326,8 @@ transformResponse result =
           where
             mkPushEvent Commit {..} =
               (getBaseEvent change)
-                { changeEventId = "ChangePushedEvent-" <> changeId change,
-                  changeEventType = Just $ ChangeEventTypeChangePushed ChangePushedEvent,
+                { changeEventId = "ChangeCommitPushedEvent-" <> changeId change <> "-" <> commitSha,
+                  changeEventType = Just $ ChangeEventTypeChangeCommitPushed ChangeCommitPushedEvent,
                   changeEventAuthor = commitAuthor,
                   changeEventCreatedAt = commitAuthoredAt
                 }
@@ -339,7 +338,7 @@ transformResponse result =
           where
             mkCommentEvent MRComment {..} =
               (getBaseEvent change)
-                { changeEventId = "ChangeCommentedEvent-" <> changeId change,
+                { changeEventId = "ChangeCommentedEvent-" <> changeId change <> "-" <> toLazy coId,
                   changeEventType = Just $ ChangeEventTypeChangeCommented ChangeCommentedEvent,
                   changeEventAuthor = Just coAuthor,
                   changeEventCreatedAt = Just $ timeToTimestamp Nothing coAuthoredAt
@@ -354,7 +353,7 @@ transformResponse result =
                     CoApproval approval' -> approval'
                     _ -> error "Runtime error"
                in (getBaseEvent change)
-                    { changeEventId = "ChangeReviewedEvent-" <> changeId change,
+                    { changeEventId = "ChangeReviewedEvent-" <> changeId change <> "-" <> toLazy coId,
                       changeEventType =
                         Just
                           . ChangeEventTypeChangeReviewed
