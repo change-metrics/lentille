@@ -124,9 +124,9 @@ fetchMergeRequest client project mrID =
   fetch (runGitLabGraphRequest client) (GetProjectMergeRequestsArgs (ID project) (Just [mrID]) Nothing)
 
 streamMergeRequests ::
-  MonadIO m => GitLabGraphClient -> UTCTime -> Text -> Stream (Of Changes) m ()
-streamMergeRequests client untilDate project =
-  streamFetch client untilDate mkArgs transformResponse breakOnDate
+  MonadIO m => GitLabGraphClient -> Text -> UTCTime -> Text -> Stream (Of Changes) m ()
+streamMergeRequests client host untilDate project =
+  streamFetch client untilDate mkArgs (transformResponse host) breakOnDate
   where
     mkArgs cursor = GetProjectMergeRequestsArgs (ID project) Nothing $ toCursorM cursor
     toCursorM :: Text -> Maybe String
@@ -147,8 +147,8 @@ streamMergeRequests client untilDate project =
     isDateOlderThan :: UTCTime -> UTCTime -> Bool
     isDateOlderThan t1 t2 = diffUTCTime t1 t2 < 0
 
-transformResponse :: GetProjectMergeRequests -> (PageInfo, [Text], [(Change, [ChangeEvent])])
-transformResponse result =
+transformResponse :: Text -> GetProjectMergeRequests -> (PageInfo, [Text], [(Change, [ChangeEvent])])
+transformResponse host result =
   case result of
     GetProjectMergeRequests
       ( Just
@@ -212,14 +212,14 @@ transformResponse result =
               changeDeletions = (fromIntToInt32 $ getDSS (toDiffStatsSummary <$> diffStatsSummary) DSSDeletions)
               changeChangedFilesCount = (fromIntToInt32 $ getDSS (toDiffStatsSummary <$> diffStatsSummary) DSSFileCount)
               changeChangedFiles = (fromList $ getChangedFile . toDiffStats <$> fromMaybe [] diffStats)
-              changeCommits = (fromList $ toCommit . toMRCommit <$> maybe [] toCommitsNodes commitsWithoutMergeCommits)
+              changeCommits = (fromList $ toCommit host . toMRCommit <$> maybe [] toCommitsNodes commitsWithoutMergeCommits)
               changeRepositoryPrefix = toLazy $ TE.replace ("/" <> shortName) "" $ removeSpace fullName
               changeRepositoryFullname = toLazy $ removeSpace fullName
               changeRepositoryShortname = toLazy shortName
-              changeAuthor = (Just $ maybe ghostIdent (toIdent . getAuthorUsername) author)
+              changeAuthor = (Just $ maybe (ghostIdent host) (toIdent host . getAuthorUsername) author)
               changeOptionalMergedBy =
                 ( Just . ChangeOptionalMergedByMergedBy $
-                    maybe ghostIdent (toIdent . getMergerUsername) mergeUser
+                    maybe (ghostIdent host) (toIdent host . getMergerUsername) mergeUser
                 )
               changeBranch = toLazy sourceBranch
               changeTargetBranch = toLazy targetBranch
@@ -242,7 +242,7 @@ transformResponse result =
               -- TODO(fbo) Use the merge status : https://docs.gitlab.com/ee/api/graphql/reference/index.html#mergestatus
               changeMergeable = (if mergeable then "MERGEABLE" else "CONFLICT")
               changeLabels = (fromList $ getLabelTitle <$> maybe [] toLabelsNodes labels)
-              changeAssignees = (fromList $ toIdent . getAssigneesUsername <$> maybe [] toAssigneesNodes assignees)
+              changeAssignees = (fromList $ toIdent host . getAssigneesUsername <$> maybe [] toAssigneesNodes assignees)
               changeApprovals = (if approved then fromList ["APPROVED"] else fromList [])
               changeDraft = draft
               changeOptionalSelfMerged =
@@ -265,7 +265,7 @@ transformResponse result =
                   NoteID noteIDT = nId
                in MRComment
                     { coId = sanitizeID noteIDT,
-                      coAuthor = toIdent author'',
+                      coAuthor = toIdent host author'',
                       coAuthoredAt = commentedAt,
                       coType = commentType
                     }

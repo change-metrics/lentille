@@ -13,6 +13,7 @@ import Macroscope.Worker (DocumentStream (..), runStream)
 import Monocle.Api.Client
 import qualified Monocle.Api.Config as Config
 import Monocle.Prelude
+import qualified Network.URI as URI
 
 -- | 'MacroM' is an alias for a bunch of constrain.
 class (MonadIO m, MonadFail m, MonadMask m, MonadLog m) => MacroM m
@@ -54,7 +55,7 @@ runMacroscope verbose confPath interval client = do
 
     crawl :: MacroM m => (Text, Text, Config.Crawler) -> m ()
     crawl (index, key, crawler) = do
-      now <- liftIO $ getCurrentTime
+      now <- liftIO getCurrentTime
       when verbose (monocleLog $ "Crawling " <> crawlerName crawler)
 
       -- Create document streams
@@ -62,11 +63,16 @@ runMacroscope verbose confPath interval client = do
         Config.GitlabProvider Config.Gitlab {..} -> do
           -- TODO: the client may be created once for each api key
           glClient <- newGitLabGraphClientWithKey gitlab_url gitlab_api_key
+          let host =
+                maybe
+                  (error "Unable to parse provided gitlab_url")
+                  (toText . URI.uriRegName)
+                  (URI.uriAuthority =<< URI.parseURI (toString gitlab_url))
           pure $
             -- When organizations are configured, we need to index its project first
             [glOrgCrawler glClient | isJust gitlab_organizations]
               -- Then we always index the projects
-              <> [glMRCrawler glClient]
+              <> [glMRCrawler glClient host]
         _ -> error "NotImplemented"
 
       -- Consume each stream
@@ -75,8 +81,8 @@ runMacroscope verbose confPath interval client = do
       -- TODO: handle exceptions
       traverse_ runner docStreams
 
-    glMRCrawler :: MonadIO m => GitLabGraphClient -> DocumentStream m
-    glMRCrawler glClient = Changes $ streamMergeRequests glClient
+    glMRCrawler :: MonadIO m => GitLabGraphClient -> Text -> DocumentStream m
+    glMRCrawler glClient host = Changes $ streamMergeRequests glClient host
 
     glOrgCrawler :: GitLabGraphClient -> DocumentStream m
     glOrgCrawler _glClient = Projects $ error "Org NotImplemented"

@@ -52,6 +52,7 @@ library
                      , streaming                  < 0.3
                      , time                       < 1.12
                      , vector                     < 0.13
+                     , network-uri                < 2.6.5
   exposed-modules:     Macroscope.Main
                      , Macroscope.Worker
 
