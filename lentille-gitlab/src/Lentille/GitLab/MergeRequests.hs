@@ -2,6 +2,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -260,9 +261,9 @@ transformResponse host result =
           where
             toNotesNodes (ProjectMergeRequestsNodesNotesNoteConnection nodes) = cleanMaybeMNodes nodes
             toMRComment :: ProjectMergeRequestsNodesNotesNodesNote -> MRComment
-            toMRComment (ProjectMergeRequestsNodesNotesNodesNote nId author' commentedAt ntype) =
+            toMRComment (ProjectMergeRequestsNodesNotesNodesNote nId author' commentedAt ntypeM) =
               let ProjectMergeRequestsNodesNotesNodesAuthorUserCore author'' = author'
-                  commentType = getCommentType ntype
+                  commentType = getCommentType ntypeM
                   NoteID noteIDT = nId
                in MRComment
                     { coId = sanitizeID noteIDT,
@@ -270,10 +271,11 @@ transformResponse host result =
                       coAuthoredAt = commentedAt,
                       coType = commentType
                     }
-            getCommentType ntypeM = case ntypeM of
+            getCommentType = \case
               Just "approval" -> CoApproval "Approved"
               Just "unapproval" -> CoApproval "Unapproved"
-              _otherwise -> CoOther
+              Just _ -> CoOther
+              Nothing -> CoComment
 
         getBaseEvent :: Change -> ChangeEvent
         getBaseEvent Change {..} =
