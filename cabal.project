@@ -12,6 +12,7 @@ source-repository-package
 
 packages:
   doc/
+  lentille/
   lentille-bugzilla/
   lentille-github/
   lentille-gitlab/
