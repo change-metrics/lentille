@@ -20,6 +20,7 @@ FROM quay.io/change-metrics/builder
 # Build project
 COPY cabal.project LICENSE /build/
 COPY doc/ /build/doc
+COPY lentille/ /build/lentille
 COPY macroscope/ /build/macroscope
 COPY lentille-bugzilla/ /build/lentille-bugzilla
 COPY lentille-github/ /build/lentille-github
