@@ -8,6 +8,7 @@ module Macroscope.Main (runMacroscope) where
 
 import Control.Concurrent (threadDelay)
 import Lentille.GitLab (GitLabGraphClient, newGitLabGraphClientWithKey)
+import Lentille.GitLab.Group (streamGroupProjects)
 import Lentille.GitLab.MergeRequests (streamMergeRequests)
 import Macroscope.Worker (DocumentStream (..), runStream)
 import Monocle.Api.Client
@@ -20,13 +21,14 @@ class (MonadIO m, MonadFail m, MonadMask m, MonadLog m) => MacroM m
 instance MacroM IO
 
 -- | Utility function to create a flat list of crawler from the whole configuration
-getCrawlers :: [Config.Index] -> [(Text, Text, Config.Crawler)]
+getCrawlers :: [Config.Index] -> [(Text, Text, Config.Crawler, [Config.Ident])]
 getCrawlers xs = do
   index <- xs
   crawler <- fromMaybe [] (Config.crawlers index)
+  let idents = fromMaybe [] (Config.idents index)
   let name = Config.index index
       key = fromMaybe (error "Api key is missing") (Config.crawlers_api_key index)
-  pure (name, key, crawler)
+  pure (name, key, crawler, idents)
 
 crawlerName :: Config.Crawler -> Text
 crawlerName Config.Crawler {..} = name
@@ -53,8 +55,8 @@ runMacroscope verbose confPath interval client = do
 
     interval_usec = fromInteger . toInteger $ interval * 1_000_000
 
-    crawl :: MacroM m => (Text, Text, Config.Crawler) -> m ()
-    crawl (index, key, crawler) = do
+    crawl :: MacroM m => (Text, Text, Config.Crawler, [Config.Ident]) -> m ()
+    crawl (index, key, crawler, idents) = do
       now <- liftIO getCurrentTime
       when verbose (monocleLog $ "Crawling " <> crawlerName crawler)
 
@@ -67,7 +69,7 @@ runMacroscope verbose confPath interval client = do
             -- When organizations are configured, we need to index its project first
             [glOrgCrawler glClient | isJust gitlab_organizations]
               -- Then we always index the projects
-              <> [glMRCrawler glClient]
+              <> [glMRCrawler glClient getIdentByAliasCB]
         _ -> error "NotImplemented"
 
       -- Consume each stream
@@ -75,9 +77,12 @@ runMacroscope verbose confPath interval client = do
             runStream client now (toLazy key) (toLazy index) (toLazy $ crawlerName crawler)
       -- TODO: handle exceptions
       traverse_ runner docStreams
+      where
+        getIdentByAliasCB :: Text -> Maybe Text
+        getIdentByAliasCB = flip Config.getIdentByAliasFromIdents idents
 
-    glMRCrawler :: MonadIO m => GitLabGraphClient -> DocumentStream m
-    glMRCrawler glClient = Changes $ streamMergeRequests glClient
+    glMRCrawler :: GitLabGraphClient -> (Text -> Maybe Text) -> DocumentStream
+    glMRCrawler glClient cb = Changes $ streamMergeRequests glClient cb
 
-    glOrgCrawler :: GitLabGraphClient -> DocumentStream m
-    glOrgCrawler _glClient = Projects $ error "Org NotImplemented"
+    glOrgCrawler :: GitLabGraphClient -> DocumentStream
+    glOrgCrawler glClient = Projects $ streamGroupProjects glClient
